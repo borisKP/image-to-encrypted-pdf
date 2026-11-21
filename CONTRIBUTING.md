@@ -17,8 +17,9 @@ dependency-light; please keep it that way.
 | `VERSION` | Single source of truth for the release version. |
 | `Makefile` | `verify-version` / `fmt-check` / `engine-test` / `build` / `clean`. |
 | `tests/README.md` | Test layers, environment switches and manual acceptance checklist. |
+| `docs/screenshots/` | Real UI screenshots: Chinese/English x light/dark, queue and About panels. |
 | `.github/` | Issue / PR templates and the macOS CI workflow. |
-| `README.md` | English project documentation. |
+| `README.md` | Single bilingual README: Chinese first, then English. |
 
 The UI launches the Go helper as a child process and talks over stdout, one JSON
 object per line (`list`, `thumb`, `build`, `progress`, `log`, `report`, `result`,
