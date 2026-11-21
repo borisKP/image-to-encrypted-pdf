@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine:
+    name: Engine tests + static checks
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: imgtopdf/go.sum
+
+      - name: Version consistency
+        run: make verify-version
+
+      - name: gofmt
+        run: |
+          out=$(gofmt -l imgtopdf/*.go)
+          if [ -n "$out" ]; then echo "gofmt needed:"; echo "$out"; exit 1; fi
+
+      - name: go vet
+        working-directory: imgtopdf
+        run: go vet ./...
+
+      - name: Engine tests
+        run: make engine-test
+
+  app:
+    name: Universal 2 app build
+    needs: engine
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: imgtopdf/go.sum
+
+      - name: Build .app / DMG / ZIP
+        run: make build
+
+      - name: Verify Universal 2 binaries
+        run: |
+          APP=.build/app/ImageToEncryptedPDF.app/Contents/MacOS
+          for f in imgtopdf_ui imgtopdf-helper; do
+            echo "--- $f"; lipo -archs "$APP/$f"
+            lipo -archs "$APP/$f" | grep -q 'x86_64' || exit 1
+            lipo -archs "$APP/$f" | grep -q 'arm64'  || exit 1
+          done
+          codesign -vvv .build/app/ImageToEncryptedPDF.app
+
+      - name: Verify bundle version
+        run: |
+          V=$(tr -d '[:space:]' < VERSION)
+          P=.build/app/ImageToEncryptedPDF.app/Contents/Info.plist
+          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$P")" = "$V" ]
+          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$P")" = "$V" ]
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: ImageToEncryptedPDF-macOS-universal
+          path: |
+            outputs/ImageToEncryptedPDF_macOS.dmg
+            outputs/ImageToEncryptedPDF_macOS.zip
+          if-no-files-found: error

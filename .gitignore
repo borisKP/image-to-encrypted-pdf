@@ -1,0 +1,47 @@
+# --- Local build output -------------------------------------------------
+.build/
+outputs/
+dist/
+build/
+
+# --- macOS / AppKit -----------------------------------------------------
+.DS_Store
+*.app/
+*.dmg
+*.icns
+DerivedData/
+xcuserdata/
+*.xcworkspace/
+
+# --- Go ------------------------------------------------------------------
+*.exe
+*.test
+*.out
+vendor/
+imgtopdf-helper
+helper_*
+ui_*
+
+# --- Swift ---------------------------------------------------------------
+.swiftpm/
+
+# --- Python (tests / tooling) --------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+
+# --- Generated data -------------------------------------------------------
+tests/_tmp/
+*.pdf
+*.log
+preview_*.jpg
+
+# --- Private input media (never commit real photos or archives) -----------
+# PNG is intentionally allowed so documentation screenshots can be added.
+*.rar
+*.7z
+*.jpg
+*.jpeg
+*.heic
+*.heif
+*.avif
